@@ -3,6 +3,8 @@ set -e
 
 # Railway provides PORT; FastMCP reads FASTMCP_PORT
 export FASTMCP_PORT="${PORT:-8000}"
+# Bind to all interfaces so Railway can route traffic
+export FASTMCP_HOST="0.0.0.0"
 
 # Generate google-ads.yaml from env vars if the file doesn't already exist
 CREDS_PATH="${GOOGLE_ADS_CREDENTIALS:-/app/google-ads.yaml}"

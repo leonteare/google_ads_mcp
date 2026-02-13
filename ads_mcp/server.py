@@ -47,10 +47,16 @@ if os.getenv("FASTMCP_SERVER_AUTH_GOOGLE_CLIENT_ID") and os.getenv(
 def main():
   """Initializes and runs the MCP server."""
   asyncio.run(update_views_yaml())  # Check and update docs resource
-  api.get_ads_client()  # Check Google Ads credentials
+  try:
+    api.get_ads_client()  # Check Google Ads credentials
+  except FileNotFoundError as e:
+    print(f"WARNING: {e}")
+    print("Server will start, but API tools will fail until credentials are configured.")
   print("mcp server starting...")
+  host = os.environ.get("FASTMCP_HOST", "0.0.0.0")
   mcp_server.run(
       transport="streamable-http",
+      host=host,
       show_banner=False,
   )  # Initialize and run the server
 
