@@ -24,6 +24,7 @@ from ads_mcp.tools import docs
 import dotenv
 from fastmcp.server.auth.providers.google import GoogleProvider
 from fastmcp.server.auth.providers.google import GoogleTokenVerifier
+import uvicorn
 
 
 dotenv.load_dotenv()
@@ -44,6 +45,22 @@ if os.getenv("FASTMCP_SERVER_AUTH_GOOGLE_CLIENT_ID") and os.getenv(
   )
 
 
+def bearer_token_wrapper(app):
+  """Wraps an ASGI app to require a valid Bearer token."""
+  async def wrapped(scope, receive, send):
+    if scope["type"] == "http":
+      token = os.environ.get("MCP_AUTH_TOKEN")
+      if token:
+        headers = dict(scope.get("headers", []))
+        auth = headers.get(b"authorization", b"").decode()
+        if auth != f"Bearer {token}":
+          await send({"type": "http.response.start", "status": 401, "headers": [[b"content-type", b"application/json"]]})
+          await send({"type": "http.response.body", "body": b'{"error":"Unauthorized"}'})
+          return
+    await app(scope, receive, send)
+  return wrapped
+
+
 def main():
   """Initializes and runs the MCP server."""
   asyncio.run(update_views_yaml())  # Check and update docs resource
@@ -54,11 +71,10 @@ def main():
     print("Server will start, but API tools will fail until credentials are configured.")
   print("mcp server starting...")
   host = os.environ.get("FASTMCP_HOST", "0.0.0.0")
-  mcp_server.run(
-      transport="streamable-http",
-      host=host,
-      show_banner=False,
-  )  # Initialize and run the server
+  port = int(os.environ.get("FASTMCP_PORT", "8000"))
+  app = mcp_server.http_app(transport="streamable-http")
+  app = bearer_token_wrapper(app)
+  uvicorn.run(app, host=host, port=port)
 
 
 if __name__ == "__main__":
