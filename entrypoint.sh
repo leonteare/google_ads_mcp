@@ -15,6 +15,7 @@ client_id: "${GOOGLE_ADS_CLIENT_ID}"
 client_secret: "${GOOGLE_ADS_CLIENT_SECRET}"
 refresh_token: "${GOOGLE_ADS_REFRESH_TOKEN}"
 login_customer_id: "${GOOGLE_ADS_LOGIN_CUSTOMER_ID}"
+use_proto_plus: true
 EOF
   export GOOGLE_ADS_CREDENTIALS="$CREDS_PATH"
   echo "Generated google-ads.yaml from environment variables"

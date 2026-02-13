@@ -66,7 +66,7 @@ def main():
   asyncio.run(update_views_yaml())  # Check and update docs resource
   try:
     api.get_ads_client()  # Check Google Ads credentials
-  except FileNotFoundError as e:
+  except (FileNotFoundError, ValueError) as e:
     print(f"WARNING: {e}")
     print("Server will start, but API tools will fail until credentials are configured.")
   print("mcp server starting...")
